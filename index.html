@@ -355,10 +355,110 @@
   footer a { color: var(--text-dim); }
 
   .hidden { display: none !important; }
+
+  /* Auth gate */
+  .auth-gate {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,107,53,0.10), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(74,144,255,0.10), transparent 50%),
+      var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+  }
+  .auth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .auth-emoji { font-size: 48px; margin-bottom: 12px; }
+  .auth-card h2 {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .auth-card p {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 22px;
+  }
+  .auth-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .auth-card input {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 12px 14px;
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .auth-card input:focus { border-color: var(--accent); }
+  .auth-card button {
+    background: linear-gradient(135deg, var(--accent), #ff8a3d);
+    border: none;
+    color: #1a0e07;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s;
+    font-family: inherit;
+  }
+  .auth-card button:hover { filter: brightness(1.1); }
+  .auth-error {
+    color: #ff6b6b;
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 18px;
+  }
+  .lock-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+  }
+  .lock-btn:hover { color: var(--accent); border-color: var(--accent); }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="auth-gate" id="auth-gate">
+  <div class="auth-card">
+    <div class="auth-emoji">🦞</div>
+    <h2>The Moose Dispatch</h2>
+    <p>Password required</p>
+    <form id="auth-form">
+      <input type="password" id="auth-input" autocomplete="current-password" placeholder="Password" required>
+      <button type="submit">Unlock</button>
+    </form>
+    <div class="auth-error" id="auth-error">&nbsp;</div>
+  </div>
+</div>
+<div class="wrap hidden" id="app">
   <header>
     <div class="brand">
       <h1>🦞 The Moose Dispatch</h1>
@@ -370,6 +470,9 @@
       <button class="refresh primary" id="refresh-btn" onclick="loadAll()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
         <span id="refresh-label">Update News</span>
+      </button>
+      <button class="lock-btn" id="lock-btn" onclick="lockSession()" title="Lock dashboard">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       </button>
     </div>
   </header>
@@ -393,7 +496,7 @@
   <main id="main"></main>
 
   <footer>
-    Pulled live from major outlets via RSS · Sources include AP, NPR, NYT, BBC, Reuters, Guardian, Gothamist, Hacker News, The Verge, Ars Technica, ESPN, NPR · No tracking, no API keys, just news.
+    Pulled live via RSS · Sources include AP, NPR, NYT, BBC, Guardian, Al Jazeera (EN/AR), Haaretz, Gothamist, amNY, Village Voice, Tribeca Trib, Chelsea Clinton News, Our Town, Hacker News, The Verge, Ars Technica, ESPN · No tracking, no API keys.
   </footer>
 </div>
 
@@ -403,7 +506,6 @@
 // ---------- Sources ----------
 const FEEDS = {
   us: [
-    { name: 'AP Top News', url: 'https://feeds.apnews.com/rss/apf-topnews', cat: 'us' },
     { name: 'NPR News', url: 'https://feeds.npr.org/1001/rss.xml', cat: 'us' },
     { name: 'NYT US', url: 'https://rss.nytimes.com/services/xml/rss/nyt/US.xml', cat: 'us' },
     { name: 'NPR Politics', url: 'https://feeds.npr.org/1014/rss.xml', cat: 'us' },
@@ -413,11 +515,18 @@ const FEEDS = {
     { name: 'NYT NY Region', url: 'https://rss.nytimes.com/services/xml/rss/nyt/NYRegion.xml', cat: 'nyc' },
     { name: 'amNewYork', url: 'https://www.amny.com/feed/', cat: 'nyc' },
     { name: 'NY Daily News', url: 'https://www.nydailynews.com/feed/', cat: 'nyc' },
+    { name: 'Village Voice', url: 'https://www.villagevoice.com/feed/', cat: 'nyc' },
+    { name: 'Tribeca Trib', url: 'https://tribecatrib.com/rss.xml', cat: 'nyc' },
+    { name: 'Chelsea Clinton News', url: 'https://www.chelseaclintonnews.com/feed/', cat: 'nyc' },
+    { name: 'Our Town NY', url: 'https://news.google.com/rss/search?q=site:ourtownny.com&hl=en-US&gl=US&ceid=US:en', cat: 'nyc' },
   ],
   global: [
     { name: 'BBC World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', cat: 'global' },
     { name: 'Guardian World', url: 'https://www.theguardian.com/world/rss', cat: 'global' },
-    { name: 'Al Jazeera', url: 'https://www.aljazeera.com/xml/rss/all.xml', cat: 'global' },
+    { name: 'Al Jazeera English', url: 'https://www.aljazeera.com/xml/rss/all.xml', cat: 'global' },
+    { name: 'Al Jazeera Arabic', url: 'https://www.aljazeera.net/aljazeerarss/a7c186be-1baa-4bd4-9d80-a84db769f779/73d0e1b4-532f-45ef-b135-bfdff8b8cab9', cat: 'global' },
+    { name: 'Haaretz', url: 'https://www.haaretz.com/srv/haaretz-latest-headlines', cat: 'global' },
+    { name: 'Associated Press', url: 'https://news.google.com/rss/search?q=site:apnews.com&hl=en-US&gl=US&ceid=US:en', cat: 'global' },
     { name: 'NYT World', url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', cat: 'global' },
   ],
   tech: [
@@ -786,26 +895,77 @@ function mergeAndRender(rawItems) {
   renderTab(state.activeTab);
 }
 
-// ---------- Boot ----------
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => renderTab(t.dataset.tab));
-});
-clock();
-setInterval(clock, 30000);
+// ---------- Auth ----------
+// SHA-256 of the dashboard password. To change: compute SHA-256 of new password
+// (e.g. `printf 'newpass' | sha256sum`) and replace the hex string below.
+const PASSWORD_HASH = 'c9bf9ebe3b9083a103c04c927b766cf943d8924c05cd28c3f53e3f05f44bb754';
+const AUTH_STORAGE_KEY = 'moose-dispatch-auth-v1';
 
-// Load cached items immediately — no auto-fetch
-const hasCache = loadCache();
-if (hasCache) {
-  renderTicker(state.items);
-  renderTab(state.activeTab);
-  updateStamp();
-} else {
-  document.getElementById('main').innerHTML = `<div class="empty">No cached news yet — tap <strong>Update News</strong> above to fetch the latest.</div>`;
-  updateStamp();
+async function sha256Hex(text) {
+  const buf = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Refresh the "X minutes ago" label every minute
-setInterval(updateStamp, 60_000);
+function unlock() {
+  document.getElementById('auth-gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  boot();
+}
+
+function lockSession() {
+  try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) {}
+  location.reload();
+}
+
+document.getElementById('auth-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const inputEl = document.getElementById('auth-input');
+  const errorEl = document.getElementById('auth-error');
+  const hash = await sha256Hex(inputEl.value);
+  if (hash === PASSWORD_HASH) {
+    try { localStorage.setItem(AUTH_STORAGE_KEY, hash); } catch (e) {}
+    errorEl.textContent = '';
+    unlock();
+  } else {
+    errorEl.textContent = 'Wrong password';
+    inputEl.value = '';
+    inputEl.focus();
+  }
+});
+
+let __booted = false;
+function boot() {
+  if (__booted) return;
+  __booted = true;
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => renderTab(t.dataset.tab));
+  });
+  clock();
+  setInterval(clock, 30000);
+
+  // Load cached items immediately — no auto-fetch
+  const hasCache = loadCache();
+  if (hasCache) {
+    renderTicker(state.items);
+    renderTab(state.activeTab);
+    updateStamp();
+  } else {
+    document.getElementById('main').innerHTML = `<div class="empty">No cached news yet — tap <strong>Update News</strong> above to fetch the latest.</div>`;
+    updateStamp();
+  }
+
+  // Refresh the "X minutes ago" label every minute
+  setInterval(updateStamp, 60_000);
+}
+
+// ---------- Boot ----------
+if (localStorage.getItem(AUTH_STORAGE_KEY) === PASSWORD_HASH) {
+  unlock();
+} else {
+  document.getElementById('auth-input').focus();
+}
 </script>
 </body>
 </html>
