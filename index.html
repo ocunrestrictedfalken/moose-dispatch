@@ -513,12 +513,14 @@ const FEEDS = {
   nyc: [
     { name: 'Gothamist', url: 'https://gothamist.com/feed', cat: 'nyc' },
     { name: 'NYT NY Region', url: 'https://rss.nytimes.com/services/xml/rss/nyt/NYRegion.xml', cat: 'nyc' },
+    { name: 'The City', url: 'https://thecity.nyc/feed/', cat: 'nyc' },
+    { name: 'NY Post', url: 'https://nypost.com/feed/', cat: 'nyc' },
     { name: 'amNewYork', url: 'https://www.amny.com/feed/', cat: 'nyc' },
-    { name: 'NY Daily News', url: 'https://www.nydailynews.com/feed/', cat: 'nyc' },
+    { name: 'Observer', url: 'https://observer.com/feed/', cat: 'nyc' },
+    { name: 'Curbed NY', url: 'https://www.curbed.com/rss/index.xml', cat: 'nyc' },
     { name: 'Village Voice', url: 'https://www.villagevoice.com/feed/', cat: 'nyc' },
+    { name: 'Brooklyn Eagle', url: 'https://brooklyneagle.com/feed/', cat: 'nyc' },
     { name: 'Tribeca Trib', url: 'https://tribecatrib.com/rss.xml', cat: 'nyc' },
-    { name: 'Chelsea Clinton News', url: 'https://www.chelseaclintonnews.com/feed/', cat: 'nyc' },
-    { name: 'Our Town NY', url: 'https://news.google.com/rss/search?q=site:ourtownny.com&hl=en-US&gl=US&ceid=US:en', cat: 'nyc' },
   ],
   global: [
     { name: 'BBC World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', cat: 'global' },
@@ -812,10 +814,21 @@ function loadCache() {
   }
 }
 
+function diversifyBySource(items, max = 5) {
+  const counts = {};
+  const out = [];
+  for (const item of items) {
+    const k = item.source;
+    counts[k] = (counts[k] || 0) + 1;
+    if (counts[k] <= max) out.push(item);
+  }
+  return out;
+}
+
 function rebuildByCat() {
   state.byCat = {};
   Object.keys(FEEDS).forEach(c => {
-    state.byCat[c] = state.items.filter(i => i.cat === c);
+    state.byCat[c] = diversifyBySource(state.items.filter(i => i.cat === c));
   });
 }
 
