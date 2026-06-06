@@ -509,6 +509,8 @@ const FEEDS = {
     { name: 'NPR News', url: 'https://feeds.npr.org/1001/rss.xml', cat: 'us' },
     { name: 'NYT US', url: 'https://rss.nytimes.com/services/xml/rss/nyt/US.xml', cat: 'us' },
     { name: 'NPR Politics', url: 'https://feeds.npr.org/1014/rss.xml', cat: 'us' },
+    { name: 'The Intercept', url: 'https://theintercept.com/feed/?rss=1', cat: 'us' },
+    { name: 'ProPublica', url: 'https://feeds.propublica.org/propublica/main', cat: 'us' },
   ],
   nyc: [
     { name: 'Gothamist', url: 'https://gothamist.com/feed', cat: 'nyc' },
@@ -523,13 +525,14 @@ const FEEDS = {
     { name: 'Tribeca Trib', url: 'https://tribecatrib.com/rss.xml', cat: 'nyc' },
   ],
   global: [
-    { name: 'BBC World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', cat: 'global' },
     { name: 'Guardian World', url: 'https://www.theguardian.com/world/rss', cat: 'global' },
     { name: 'Al Jazeera English', url: 'https://www.aljazeera.com/xml/rss/all.xml', cat: 'global' },
     { name: 'Al Jazeera Arabic', url: 'https://www.aljazeera.net/aljazeerarss/a7c186be-1baa-4bd4-9d80-a84db769f779/73d0e1b4-532f-45ef-b135-bfdff8b8cab9', cat: 'global' },
     { name: 'Haaretz', url: 'https://www.haaretz.com/srv/haaretz-latest-headlines', cat: 'global' },
     { name: 'Associated Press', url: 'https://news.google.com/rss/search?q=site:apnews.com&hl=en-US&gl=US&ceid=US:en', cat: 'global' },
     { name: 'NYT World', url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', cat: 'global' },
+    { name: 'The Economist', url: 'https://www.economist.com/rss/the_world_this_week_rss.xml', cat: 'global' },
+    { name: 'Foreign Policy', url: 'https://foreignpolicy.com/feed/', cat: 'global' },
   ],
   tech: [
     { name: 'Hacker News', url: 'https://hnrss.org/frontpage', cat: 'tech' },
@@ -539,13 +542,16 @@ const FEEDS = {
   ],
   biz: [
     { name: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', cat: 'biz' },
-    { name: 'CNBC Top', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114', cat: 'biz' },
+    { name: 'Bloomberg', url: 'https://feeds.bloomberg.com/markets/news.rss', cat: 'biz' },
     { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss', cat: 'biz' },
   ],
   sci: [
     { name: 'NYT Science', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', cat: 'sci' },
     { name: 'Ars Science', url: 'https://feeds.arstechnica.com/arstechnica/science', cat: 'sci' },
     { name: 'Guardian Science', url: 'https://www.theguardian.com/science/rss', cat: 'sci' },
+    { name: 'Scientific American', url: 'https://www.scientificamerican.com/platform/syndication/rss/', cat: 'sci' },
+    { name: 'Popular Science', url: 'https://www.popsci.com/feed/', cat: 'sci' },
+    { name: 'Science Magazine', url: 'https://www.science.org/rss/news_current.xml', cat: 'sci' },
   ],
   sports: [
     { name: 'ESPN', url: 'https://www.espn.com/espn/rss/news', cat: 'sports' },
@@ -676,6 +682,21 @@ function parseFeed(xmlText, feed) {
       const summaryRaw = entry.querySelector('summary')?.textContent || entry.querySelector('content')?.textContent || '';
       const desc = stripHtml(summaryRaw).slice(0, 240);
       const image = extractImage(entry, summaryRaw);
+      if (title && link) out.push({ title: decodeHtml(title), link, date, desc: decodeHtml(desc), image, source: feed.name, cat: feed.cat });
+    });
+    return out;
+  }
+  // RDF/RSS 1.0 (e.g. science.org) — items are top-level siblings of <channel>
+  const rdfItems = doc.querySelectorAll('item');
+  if (rdfItems.length) {
+    rdfItems.forEach(item => {
+      const title = stripHtml(item.querySelector('title')?.textContent || '');
+      const link = (item.querySelector('link')?.textContent || item.getAttribute('rdf:about') || '').trim();
+      const pubDateRaw = item.getElementsByTagNameNS('*', 'date')[0]?.textContent || '';
+      const date = pubDateRaw ? new Date(pubDateRaw) : new Date();
+      const descRaw = item.querySelector('description')?.textContent || '';
+      const desc = stripHtml(descRaw).slice(0, 240);
+      const image = extractImage(item, descRaw);
       if (title && link) out.push({ title: decodeHtml(title), link, date, desc: decodeHtml(desc), image, source: feed.name, cat: feed.cat });
     });
     return out;
