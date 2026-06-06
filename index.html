@@ -496,7 +496,7 @@
   <main id="main"></main>
 
   <footer>
-    Pulled live via RSS · Sources include AP, NPR, NYT, BBC, Guardian, Al Jazeera, Reuters, PBS, France 24, DW, Haaretz, Gothamist, The City, amNY, Hacker News, The Verge, Ars Technica, TechCrunch, Wired, Bloomberg, CNBC, MarketWatch, Nature, Scientific American, ESPN, CBS Sports · No tracking, no API keys.
+    Pulled live via RSS · Sources include AP, NPR, NYT, Guardian, Al Jazeera, Haaretz, Gothamist, The City, amNY, Village Voice, Hacker News, The Verge, Ars Technica, Wired, Bloomberg, Scientific American, ESPN · No tracking, no API keys.
   </footer>
 </div>
 
@@ -511,9 +511,6 @@ const FEEDS = {
     { name: 'NPR Politics', url: 'https://feeds.npr.org/1014/rss.xml', cat: 'us' },
     { name: 'The Intercept', url: 'https://theintercept.com/feed/?rss=1', cat: 'us' },
     { name: 'ProPublica', url: 'https://feeds.propublica.org/propublica/main', cat: 'us' },
-    { name: 'PBS NewsHour', url: 'https://www.pbs.org/newshour/feeds/rss/headlines', cat: 'us' },
-    { name: 'USA Today', url: 'https://rssfeeds.usatoday.com/usatoday-NewsTopStories', cat: 'us' },
-    { name: 'Reuters US', url: 'https://news.google.com/rss/search?q=site:reuters.com+US&hl=en-US&gl=US&ceid=US:en', cat: 'us' },
   ],
   nyc: [
     { name: 'Gothamist', url: 'https://gothamist.com/feed', cat: 'nyc' },
@@ -530,30 +527,21 @@ const FEEDS = {
   global: [
     { name: 'Guardian World', url: 'https://www.theguardian.com/world/rss', cat: 'global' },
     { name: 'Al Jazeera English', url: 'https://www.aljazeera.com/xml/rss/all.xml', cat: 'global' },
-    { name: 'BBC World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', cat: 'global' },
     { name: 'Haaretz', url: 'https://www.haaretz.com/srv/haaretz-latest-headlines', cat: 'global' },
     { name: 'Associated Press', url: 'https://news.google.com/rss/search?q=site:apnews.com&hl=en-US&gl=US&ceid=US:en', cat: 'global' },
     { name: 'NYT World', url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', cat: 'global' },
     { name: 'Foreign Policy', url: 'https://foreignpolicy.com/feed/', cat: 'global' },
-    { name: 'France 24', url: 'https://www.france24.com/en/rss', cat: 'global' },
-    { name: 'DW News', url: 'https://rss.dw.com/rdf/rss-en-all', cat: 'global' },
-    { name: 'Reuters World', url: 'https://news.google.com/rss/search?q=site:reuters.com+world&hl=en-US&gl=US&ceid=US:en', cat: 'global' },
   ],
   tech: [
     { name: 'Hacker News', url: 'https://hnrss.org/frontpage', cat: 'tech' },
     { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', cat: 'tech' },
     { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', cat: 'tech' },
     { name: 'Wired', url: 'https://www.wired.com/feed/rss', cat: 'tech' },
-    { name: 'TechCrunch', url: 'https://techcrunch.com/feed/', cat: 'tech' },
-    { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', cat: 'tech' },
   ],
   biz: [
     { name: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', cat: 'biz' },
     { name: 'Bloomberg', url: 'https://feeds.bloomberg.com/markets/news.rss', cat: 'biz' },
     { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss', cat: 'biz' },
-    { name: 'MarketWatch', url: 'https://feeds.marketwatch.com/marketwatch/topstories/', cat: 'biz' },
-    { name: 'Financial Times', url: 'https://www.ft.com/?format=rss', cat: 'biz' },
-    { name: 'CNBC Top', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114', cat: 'biz' },
   ],
   sci: [
     { name: 'NYT Science', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml', cat: 'sci' },
@@ -562,16 +550,11 @@ const FEEDS = {
     { name: 'Scientific American', url: 'https://www.scientificamerican.com/platform/syndication/rss/', cat: 'sci' },
     { name: 'Popular Science', url: 'https://www.popsci.com/feed/', cat: 'sci' },
     { name: 'Science Magazine', url: 'https://www.science.org/rss/news_current.xml', cat: 'sci' },
-    { name: 'Nature News', url: 'https://www.nature.com/nature.rss', cat: 'sci' },
-    { name: 'New Scientist', url: 'https://www.newscientist.com/section/news/feed/', cat: 'sci' },
   ],
   sports: [
     { name: 'ESPN', url: 'https://www.espn.com/espn/rss/news', cat: 'sports' },
     { name: 'NYT Sports', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml', cat: 'sports' },
     { name: 'Guardian Sport', url: 'https://www.theguardian.com/uk/sport/rss', cat: 'sports' },
-    { name: 'CBS Sports', url: 'https://www.cbssports.com/rss/headlines/', cat: 'sports' },
-    { name: 'Bleacher Report', url: 'https://bleacherreport.com/articles/feed', cat: 'sports' },
-    { name: 'The Athletic', url: 'https://theathletic.com/feeds/rss/news/', cat: 'sports' },
   ],
 };
 
@@ -865,7 +848,7 @@ function loadCache() {
   }
 }
 
-function diversifyBySource(items, max = 3) {
+function diversifyBySource(items, max = 5) {
   const counts = {};
   const out = [];
   for (const item of items) {
